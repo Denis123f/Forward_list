@@ -1,0 +1,77 @@
+#include <iostream>
+#include <string>
+
+template<typename U>
+struct allocator{
+    U* create(const U v){
+        return new U(v);
+    }
+    U* allocate(size_t num){
+        return reinterpret_cast <U*> (new char[num * sizeof(U)]);
+    }
+    void destroy(U* st){
+        U* start = st;
+        U* pere = start;
+        while(start->next) {start = start->next; delete pere; pere = start;} delete pere;
+    }
+    void destroy(size_t num){
+        delete reinterpret_cast <char> (num * sizeof(U));
+    }
+    
+};
+
+template <typename T> 
+struct Node{
+    Node* next = nullptr;
+    T value;
+    Node(T value) : value(value) {}
+    
+};
+
+template <typename T>
+class Forward_list{
+
+    private:
+
+    Node<T>* start=nullptr, *end = nullptr;  
+    allocator<Node <T>>* alloc;
+    public:
+
+    Forward_list()=delete;
+    Forward_list(T v){
+        start = end = alloc->create(v);
+    }
+    void insert(T v){
+        Node<T>* now = alloc->create(v);
+        end->next = now;
+        end = end->next;
+    }
+
+
+    void check_list() const{
+        Node<T>* f = start;
+        while(f->next) {printf("%d ", f->value);f = f->next;} printf("%d ", f->value);
+    }
+    ~Forward_list(){
+        alloc->destroy(start);
+    }
+
+    const size_t size() const;
+    void clear();
+    void del_end();
+    T* operator[](size_t);
+    T* operator+(); // add the 2 node
+    T* operator-();
+    T* operator*();
+    T* operator=(T*);
+    bool operator==(T*);
+};
+
+int main() 
+{
+    Forward_list<int> b(10);
+    b.insert(20);
+    b.insert(30);
+    b.check_list();
+	return 0;
+}
